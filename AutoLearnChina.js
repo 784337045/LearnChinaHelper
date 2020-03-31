@@ -12,7 +12,7 @@ ui.layout(
     <drawer id="drawer">
     <vertical>
         <appbar>
-            <toolbar id="toolbar" title="强国助手 V2.1.1"/>
+            <toolbar id="toolbar" title="强国助手 V2.1.2"/>
             <tabs id="tabs"/>
         </appbar>
         <Switch id="autoService" text="无障碍服务" checked="{{auto.service != null}}" padding="8 8 8 8" textSize="15sp"/>
@@ -170,10 +170,11 @@ ui.emitter.on("options_item_selected", (e, item)=>{
             app.startActivity('console');
             break;
         case "关于":
-            alert("关于", "强国助手 v2.1.1\n"+
+            alert("关于", "强国助手 v2.1.2\n"+
             "1.最终闭源稳定版发布\n"+
-            "2.轻轻的走，正如我轻轻的来~\n"+
-            "3.感谢您的支持与鼓励，我们有缘再见~\n"+
+            "2.紧急修复填空题题目控件顺序更改问题\n"+
+            "3.轻轻的走，正如我轻轻的来~\n"+
+            "4.感谢您的支持与鼓励，我们有缘再见~\n"+
             "\nCopyright©2020 by 一岸流年1998");
             break;
     }
@@ -309,31 +310,30 @@ function getCurrentRelease(){
 
 function detectUpdate()
 {
-    toastLog("您的版本目前是最新版本~");
-    // var currentRelease = getCurrentRelease();
-    // var release_info = getLatestRelease()
-    // if(release_info!=null)
-    // {
-    //     var latestRelease = release_info[1];
-    //     if(latestRelease!=currentRelease){
-    //         dialogs.build({
-    //             title: "发现新版本(/≧▽≦)/",
-    //             content: "(下载后请先卸载旧版本再安装新版本)\n"+release_info[0]+"\n"+release_info[2],
-    //             positive: "到浏览器下载",
-    //             negative: "取消",
-    //         })
-    //         .on("positive", () => {
-    //             app.openUrl(release_info[3]);
-    //         })
-    //         .show();
-    //     }
-    //     else{
-    //         toastLog("您的版本目前是最新版本~");
-    //     }
-    // }
-    // else{
-    //     toastLog("目前无法获取github最新版本api，请您自行留意github新版本的通知！")
-    // }
+    var currentRelease = getCurrentRelease();
+    var release_info = getLatestRelease()
+    if(release_info!=null)
+    {
+        var latestRelease = release_info[1];
+        if(latestRelease!=currentRelease){
+            dialogs.build({
+                title: "发现新版本(/≧▽≦)/",
+                content: "(下载后请先卸载旧版本再安装新版本)\n"+release_info[0]+"\n"+release_info[2],
+                positive: "到浏览器下载",
+                negative: "取消",
+            })
+            .on("positive", () => {
+                app.openUrl(release_info[3]);
+            })
+            .show();
+        }
+        else{
+            toastLog("您的版本目前是最新版本~");
+        }
+    }
+    else{
+        toastLog("目前无法获取github最新版本api，请您自行留意github新版本的通知！")
+    }
 }
 
 
@@ -1290,13 +1290,13 @@ function dailyQuiz() {
         }
         //构造存放题目特征数组
         var ans_group= [];
-        var content_view = className("android.view.View").depth(23).findOnce(2);
+        var content_view = className("android.view.View").depth(22).findOnce(1);
         log("content_view:"+content_view);
         content_view.children().forEach(function(child,index){
             //找到有几个空，并确定每个空的长度
-            // log(child.desc());
+            log(child.desc());
             //找到了android.widget.EditText
-            if(child.desc()==null&&child.className()=="android.widget.EditText"){
+            if(child.desc()==""&&child.className()=="android.view.View"){
                 //获取空的索引
                 ans.index = index
                 //获得空的前缀
@@ -1306,11 +1306,16 @@ function dailyQuiz() {
                 // 获取空的长度
                 var i = index
                 ans.len = 0;
-                while(content_view.child(i+1).desc()=="")
-                {
-                    ans.len++;
-                    i++;
-                }
+                child.children().forEach(function(c){
+                    if(c.className()=="android.view.View"){
+                        ans.len++;
+                    }
+                });
+                // while(content_view.child(i+1).desc()=="")
+                // {
+                //     ans.len++;
+                //     i++;
+                // }
                 ans.postfix = content_view.child(i+1).desc();
                 ans_group.push({
                     index:ans.index,
@@ -1332,7 +1337,7 @@ function dailyQuiz() {
                 result = hint.desc().substring(0,blank.len);
                 log("观看看视频的result:"+result);
                 //填上result
-                content_view.child(blank.index).setText(result);
+                content_view.child(blank.index).child(0).setText(result);
                 sleep(500);
                 continue;
             }
@@ -1344,12 +1349,9 @@ function dailyQuiz() {
                 if(start!=-1){//说明找到了
                     start = start+pre_chars.length;
                     result = hint.desc().substring(start,start+blank.len);
-                    if(result==""){
-                        result = hint.desc().substring(0,blank.len);
-                    }
                     log("result:"+result);
                     //填上result
-                    content_view.child(blank.index).setText(result);
+                    content_view.child(blank.index).child(0).setText(result);
                     sleep(500);
                     continue;
                 }
@@ -1359,12 +1361,9 @@ function dailyQuiz() {
                     if(start!=-1){//说明找到了
                         start = start+pre_chars.length;
                         result = hint.desc().substring(start,start+blank.len);
-                        if(result==""){
-                            result = hint.desc().substring(0,blank.len);
-                        }
                         log("result:"+result);
                         //填上result
-                        content_view.child(blank.index).setText(result);
+                        content_view.child(blank.index).child(0).setText(result);
                         sleep(500);
                         continue;
                     }
@@ -1374,23 +1373,17 @@ function dailyQuiz() {
                         if(start!=-1){//说明找到了
                             start = start+pre_chars.length;
                             result = hint.desc().substring(start,start+blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
                             //填上result
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
                         else{//直接选提示的前几个字符作为答案
                             log("前缀匹配未找到符合条件的结果...")
                             result = hint.desc().substring(0,blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -1403,12 +1396,9 @@ function dailyQuiz() {
                     if(start!=-1){//说明找到了
                         start = start+pre_chars.length;
                         result = hint.desc().substring(start,start+blank.len);
-                        if(result==""){
-                            result = hint.desc().substring(0,blank.len);
-                        }
                         log("result:"+result);
                         //填上result
-                        content_view.child(blank.index).setText(result);
+                        content_view.child(blank.index).child(0).setText(result);
                         sleep(500);
                         continue;
                     }
@@ -1418,12 +1408,9 @@ function dailyQuiz() {
                         if(start!=-1){//说明找到了
                             start = start+pre_chars.length;
                             result = hint.desc().substring(start,start+blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
                             //填上result
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -1431,7 +1418,7 @@ function dailyQuiz() {
                             log("前缀匹配未找到符合条件的结果...")
                             result = hint.desc().substring(0,blank.len);
                             log("result:"+result);
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -1443,12 +1430,9 @@ function dailyQuiz() {
                 if(start!=-1){//说明找到了
                     start = start+pre_chars.length;
                     result = hint.desc().substring(start,start+blank.len);
-                    if(result==""){
-                        result = hint.desc().substring(0,blank.len);
-                    }
                     log("result:"+result);
                     //填上result
-                    content_view.child(blank.index).setText(result);
+                    content_view.child(blank.index).child(0).setText(result);
                     sleep(500);
                     continue;
                 }
@@ -1456,7 +1440,7 @@ function dailyQuiz() {
                     log("前缀匹配未找到符合条件的结果...")
                     result = hint.desc().substring(0,blank.len);
                     log("result:"+result);
-                    content_view.child(blank.index).setText(result);
+                    content_view.child(blank.index).child(0).setText(result);
                     sleep(500);
                     continue;
                 }
@@ -1471,12 +1455,9 @@ function dailyQuiz() {
                     if(start!=-1){//说明找到了
                         start = start-post_chars.length;
                         result = hint.desc().substring(start,start+blank.len);
-                        if(result==""){
-                            result = hint.desc().substring(0,blank.len);
-                        }
                         log("result:"+result);
                         //填上result
-                        content_view.child(blank.index).setText(result);
+                        content_view.child(blank.index).child(0).setText(result);
                         sleep(500);
                         continue;
                     }
@@ -1487,12 +1468,9 @@ function dailyQuiz() {
                         if(start!=-1){//说明找到了
                             start = start-post_chars.length;
                             result = hint.desc().substring(start,start+blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
                             //填上result
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -1503,12 +1481,9 @@ function dailyQuiz() {
                             if(start!=-1){//说明找到了
                                 start = start-post_chars.length;
                                 result = hint.desc().substring(start,start+blank.len);
-                                if(result==""){
-                                    result = hint.desc().substring(0,blank.len);
-                                }
                                 log("result:"+result);
                                 //填上result
-                                content_view.child(blank.index).setText(result);
+                                content_view.child(blank.index).child(0).setText(result);
                                 sleep(500);
                                 continue;
                             }
@@ -1516,7 +1491,7 @@ function dailyQuiz() {
                                 log("后缀匹配未找到符合条件的结果...")
                                 result = hint.desc().substring(0,blank.len);
                                 log("result:"+result);
-                                content_view.child(blank.index).setText(result);
+                                content_view.child(blank.index).child(0).setText(result);
                                 sleep(500);
                                 continue;
                             }
@@ -1546,9 +1521,8 @@ function dailyQuiz() {
     if (descContains("单选题").exists()) {
         sleep(1000);
         log("单选")
-        //有时候程序跑太快，所以就没点到上一个题答完后的下一题控件
         if (desc("下一题").exists()) {
-            log("点击下一题")
+            log("跑太快了...");
             sleep(500);
             desc("下一题").click();
             sleep(500);
@@ -1967,7 +1941,8 @@ function specialQuiz() {
         //点击提示按钮
         desc("查看提示").findOne().click()
         sleep(1000);
-        var hint = className("android.view.View").depth(21).indexInParent(0).drawingOrder(0).findOnce(2)
+        // var hint = className("android.view.View").clickable(true).indexInParent(0).depth(22).drawingOrder(0).findOnce();
+        var hint = className("android.view.View").depth(21).indexInParent(0).drawingOrder(0).findOnce(2);
         while(hint==null||hint.desc()=="")
         {
             back();
@@ -1975,12 +1950,13 @@ function specialQuiz() {
             toastLog("重新搜索提示...");
             desc("查看提示").click();
             sleep(1000);
-            hint = className("android.view.View").depth(21).indexInParent(0).drawingOrder(0).findOnce(2)
+            // hint = className("android.view.View").clickable(true).indexInParent(0).depth(22).drawingOrder(0).findOnce();
+            hint = className("android.view.View").depth(21).indexInParent(0).drawingOrder(0).findOnce(2);
         }
-        var video_flag = 0;
-        log("提示："+hint.desc())
         back();
         sleep(1000);
+        var video_flag = 0;
+        log("提示："+hint.desc())
         if(hint.desc()=="请观看视频"){
             video_flag = 1;
         }
@@ -1993,13 +1969,14 @@ function specialQuiz() {
         }
         //构造存放题目特征数组
         var ans_group= [];
-        var content_view = className("android.view.View").depth(23).findOnce(2);
+        // var content_view = className("android.view.View").depth(22).findOnce(1);
+        var content_view = className("android.view.View").depth(22).findOnce(3);
         log("content_view:"+content_view);
         content_view.children().forEach(function(child,index){
             //找到有几个空，并确定每个空的长度
-            // log(child.desc());
+            log(child.desc());
             //找到了android.widget.EditText
-            if(child.desc()==null&&child.className()=="android.widget.EditText"){
+            if(child.desc()==""&&child.className()=="android.view.View"){
                 //获取空的索引
                 ans.index = index
                 //获得空的前缀
@@ -2009,11 +1986,16 @@ function specialQuiz() {
                 // 获取空的长度
                 var i = index
                 ans.len = 0;
-                while(content_view.child(i+1).desc()=="")
-                {
-                    ans.len++;
-                    i++;
-                }
+                child.children().forEach(function(c){
+                    if(c.className()=="android.view.View"){
+                        ans.len++;
+                    }
+                });
+                // while(content_view.child(i+1).desc()=="")
+                // {
+                //     ans.len++;
+                //     i++;
+                // }
                 ans.postfix = content_view.child(i+1).desc();
                 ans_group.push({
                     index:ans.index,
@@ -2035,24 +2017,21 @@ function specialQuiz() {
                 result = hint.desc().substring(0,blank.len);
                 log("观看看视频的result:"+result);
                 //填上result
-                content_view.child(blank.index).setText(result);
+                content_view.child(blank.index).child(0).setText(result);
                 sleep(500);
                 continue;
             }
             //取空的前3个字符，即前缀的最后3个字符
             if(blank.prefix.length>=3){
                 pre_chars = blank.prefix.substring(blank.prefix.length-3,blank.prefix.length);
-                log(pre_chars)
+                log("pre_chars:"+pre_chars)
                 start = hint.desc().indexOf(pre_chars);
                 if(start!=-1){//说明找到了
                     start = start+pre_chars.length;
                     result = hint.desc().substring(start,start+blank.len);
-                    if(result==""){
-                        result = hint.desc().substring(0,blank.len);
-                    }
                     log("result:"+result);
                     //填上result
-                    content_view.child(blank.index).setText(result);
+                    content_view.child(blank.index).child(0).setText(result);
                     sleep(500);
                     continue;
                 }
@@ -2062,12 +2041,9 @@ function specialQuiz() {
                     if(start!=-1){//说明找到了
                         start = start+pre_chars.length;
                         result = hint.desc().substring(start,start+blank.len);
-                        if(result==""){
-                            result = hint.desc().substring(0,blank.len);
-                        }
                         log("result:"+result);
                         //填上result
-                        content_view.child(blank.index).setText(result);
+                        content_view.child(blank.index).child(0).setText(result);
                         sleep(500);
                         continue;
                     }
@@ -2077,12 +2053,9 @@ function specialQuiz() {
                         if(start!=-1){//说明找到了
                             start = start+pre_chars.length;
                             result = hint.desc().substring(start,start+blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
                             //填上result
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -2090,7 +2063,7 @@ function specialQuiz() {
                             log("前缀匹配未找到符合条件的结果...")
                             result = hint.desc().substring(0,blank.len);
                             log("result:"+result);
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -2103,12 +2076,9 @@ function specialQuiz() {
                     if(start!=-1){//说明找到了
                         start = start+pre_chars.length;
                         result = hint.desc().substring(start,start+blank.len);
-                        if(result==""){
-                            result = hint.desc().substring(0,blank.len);
-                        }
                         log("result:"+result);
                         //填上result
-                        content_view.child(blank.index).setText(result);
+                        content_view.child(blank.index).child(0).setText(result);
                         sleep(500);
                         continue;
                     }
@@ -2118,12 +2088,9 @@ function specialQuiz() {
                         if(start!=-1){//说明找到了
                             start = start+pre_chars.length;
                             result = hint.desc().substring(start,start+blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
                             //填上result
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -2131,7 +2098,7 @@ function specialQuiz() {
                             log("前缀匹配未找到符合条件的结果...")
                             result = hint.desc().substring(0,blank.len);
                             log("result:"+result);
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -2143,12 +2110,9 @@ function specialQuiz() {
                 if(start!=-1){//说明找到了
                     start = start+pre_chars.length;
                     result = hint.desc().substring(start,start+blank.len);
-                    if(result==""){
-                        result = hint.desc().substring(0,blank.len);
-                    }
                     log("result:"+result);
                     //填上result
-                    content_view.child(blank.index).setText(result);
+                    content_view.child(blank.index).child(0).setText(result);
                     sleep(500);
                     continue;
                 }
@@ -2156,7 +2120,7 @@ function specialQuiz() {
                     log("前缀匹配未找到符合条件的结果...")
                     result = hint.desc().substring(0,blank.len);
                     log("result:"+result);
-                    content_view.child(blank.index).setText(result);
+                    content_view.child(blank.index).child(0).setText(result);
                     sleep(500);
                     continue;
                 }
@@ -2164,19 +2128,16 @@ function specialQuiz() {
             //如果没有前缀，则用后缀匹配
             else if(blank.prefix.length==0){
                 //若后缀长度>3,一般情况下如果前缀=0,后缀都>3
-                if(blank.postfix.length>3){
+                if(blank.postfix.length>=3){
                     post_chars = blank.postfix.substring(0,3);
                     log(post_chars)
                     start = hint.desc().indexOf(post_chars);
                     if(start!=-1){//说明找到了
                         start = start-post_chars.length;
                         result = hint.desc().substring(start,start+blank.len);
-                        if(result==""){
-                            result = hint.desc().substring(0,blank.len);
-                        }
                         log("result:"+result);
                         //填上result
-                        content_view.child(blank.index).setText(result);
+                        content_view.child(blank.index).child(0).setText(result);
                         sleep(500);
                         continue;
                     }
@@ -2187,12 +2148,9 @@ function specialQuiz() {
                         if(start!=-1){//说明找到了
                             start = start-post_chars.length;
                             result = hint.desc().substring(start,start+blank.len);
-                            if(result==""){
-                                result = hint.desc().substring(0,blank.len);
-                            }
                             log("result:"+result);
                             //填上result
-                            content_view.child(blank.index).setText(result);
+                            content_view.child(blank.index).child(0).setText(result);
                             sleep(500);
                             continue;
                         }
@@ -2203,12 +2161,9 @@ function specialQuiz() {
                             if(start!=-1){//说明找到了
                                 start = start-post_chars.length;
                                 result = hint.desc().substring(start,start+blank.len);
-                                if(result==""){
-                                    result = hint.desc().substring(0,blank.len);
-                                }
                                 log("result:"+result);
                                 //填上result
-                                content_view.child(blank.index).setText(result);
+                                content_view.child(blank.index).child(0).setText(result);
                                 sleep(500);
                                 continue;
                             }
@@ -2216,7 +2171,7 @@ function specialQuiz() {
                                 log("后缀匹配未找到符合条件的结果...")
                                 result = hint.desc().substring(0,blank.len);
                                 log("result:"+result);
-                                content_view.child(blank.index).setText(result);
+                                content_view.child(blank.index).child(0).setText(result);
                                 sleep(500);
                                 continue;
                             }
@@ -2225,10 +2180,13 @@ function specialQuiz() {
                 }
             }
         }
-        desc("查看提示").click();
-        sleep(500);
-        back();
-        sleep(1000);
+        sleep(2000);
+        var confirm = descContains("确定").findOnce();
+        if(confirm!=null){
+            confirm.click();
+            sleep(1000);
+        }
+        sleep(2000);
         if (desc("下一题").exists()) {
             desc("下一题").click();
             sleep(500);
